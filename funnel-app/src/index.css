@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* One unified system across the whole page — Alexandria + Inter
+     everywhere (no split brand voice). */
+  --font-display: "Alexandria", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display-brand: "Alexandria", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #060709;
+  --color-ink-soft: #0d1013;
+  --color-panel: #12161a;
+  --color-panel-border: #212831;
+
+  /* Single accent, deliberately off BOT Chain's exact teal (#2dd4bf) —
+     shifted toward blue-cyan (azure) rather than teal-green, so the two
+     look related in register (dark + glow) but not identical in hue. Both
+     --color-gold* and --color-teal* alias here so every existing component
+     picks up the unified color without a per-file rewrite. */
+  --color-accent: #35c3ea;
+  --color-accent-soft: #8fe1f7;
+  --color-accent-deep: #157a9c;
+
+  --color-gold: var(--color-accent);
+  --color-gold-soft: var(--color-accent-soft);
+  --color-gold-deep: var(--color-accent-deep);
+  --color-bronze: var(--color-accent-deep);
+
+  --color-teal: var(--color-accent);
+  --color-teal-soft: var(--color-accent-soft);
+  --color-teal-deep: var(--color-accent-deep);
+
+  --color-parchment: #eef3f6;
+  --color-muted: #93a0aa;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-ink);
+  color: var(--color-parchment);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-ink);
+}

@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Build output
+funnel-app/dist/
+funnel-app/dist-ssr/
+portal/.next/
+portal/out/
+portal/build/
+portal/.vercel/
+
+# Env files — never commit real secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Coverage
+coverage/
+
+# Local Claude Code tool config — session-specific, not project source
+.claude/
+
+# Source reference materials used to build the knowledge base — large,
+# not read by either app at runtime, kept local only. See docs/ for the
+# knowledge base distilled from these.
+*.pptx
+BOT Chain Brand Guideline.pdf
+Final CaryPact & BOT Chain Preview_Team Africa_03072026 (1).pdf
+SuperStarZ_CaryPact-06042026.pdf
+document_*.mp4
+c063c23b089699c0d9e55c62e2c3f3bd.webp
+
+# Original logo upload — already copied into funnel-app/public/assets and
+# portal/public/assets, which ARE tracked; this root copy is redundant.
+/logo.png
