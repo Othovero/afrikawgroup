@@ -18,9 +18,14 @@ export interface FunnelProfile {
 
 const KEY = (memberId: string) => `awg_profile_${memberId}`;
 
-/** Where the public funnel app is served. Override per environment. */
-export const FUNNEL_ORIGIN =
-  process.env.NEXT_PUBLIC_FUNNEL_ORIGIN ?? "http://localhost:5173";
+/**
+ * Where the public funnel pages are served. They're rewritten at /f/:slug*
+ * by this same Next.js app (see next.config.ts) — always same-origin as
+ * wherever the portal itself is being viewed, dev or prod.
+ */
+function funnelOrigin() {
+  return typeof window !== "undefined" ? window.location.origin : "";
+}
 
 export function emptyProfile(displayName = ""): FunnelProfile {
   return {
@@ -75,11 +80,11 @@ export function toWhatsAppUrl(input: string) {
 }
 
 /**
- * Build the member's public funnel URL. Because the funnel app is a separate
- * origin in this demo (no shared database), the personalization tokens ride
- * along as query params — the funnel reads them and renders that member's
- * page. In production the funnel would resolve `/f/{slug}` server-side from
- * the `funnels` table instead.
+ * Build the member's public funnel URL. There's no shared database between
+ * the portal and the funnel pages in this demo, so the personalization
+ * tokens ride along as query params — the funnel reads them and renders
+ * that member's page. In production the funnel would resolve `/f/{slug}`
+ * server-side from the `funnels` table instead.
  */
 export function buildFunnelUrl(profile: FunnelProfile, referralCode: string) {
   const params = new URLSearchParams({
@@ -89,12 +94,12 @@ export function buildFunnelUrl(profile: FunnelProfile, referralCode: string) {
     cp: profile.carypactUrl,
   });
   if (profile.photoUrl) params.set("photo", profile.photoUrl);
-  return `${FUNNEL_ORIGIN}/f/${profile.slug}?${params.toString()}`;
+  return `${funnelOrigin()}/f/${profile.slug}?${params.toString()}`;
 }
 
 /** The short, shareable form a member would actually paste. */
 export function prettyFunnelUrl(profile: FunnelProfile) {
-  return `${FUNNEL_ORIGIN.replace(/^https?:\/\//, "")}/f/${profile.slug}`;
+  return `${funnelOrigin().replace(/^https?:\/\//, "")}/f/${profile.slug}`;
 }
 
 export function validateReferralUrl(url: string, host: string) {
