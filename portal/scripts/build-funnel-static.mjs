@@ -22,9 +22,9 @@ const funnelAppRoot = path.resolve(portalRoot, "..", "funnel-app");
 const funnelDist = path.join(funnelAppRoot, "dist");
 const destination = path.join(portalRoot, "public", "funnel-static");
 
-function run(cmd, cwd) {
+function run(cmd, cwd, envOverrides = {}) {
   console.log(`[build-funnel-static] ${cmd}  (in ${cwd})`);
-  execSync(cmd, { cwd, stdio: "inherit" });
+  execSync(cmd, { cwd, stdio: "inherit", env: { ...process.env, ...envOverrides } });
 }
 
 if (!existsSync(funnelAppRoot)) {
@@ -35,13 +35,17 @@ if (!existsSync(funnelAppRoot)) {
   process.exit(0);
 }
 
-// Always a full, deterministic install from the lockfile — no conditional
-// "skip if node_modules exists" check. That check previously let a partial
-// or stale node_modules slip through (seen in practice: npm resolved only
-// 7 of ~64 needed packages, silently dropping @types/node and vite/client,
-// which then failed `tsc -b`). `npm ci` removes node_modules first and
-// installs exactly what package-lock.json specifies, every time.
-run("npm ci", funnelAppRoot);
+// Full, deterministic install from the lockfile, forced to include
+// devDependencies. Vercel's build environment sets NODE_ENV=production,
+// and npm's default under that is to skip devDependencies entirely —
+// which is where vite, typescript and @vitejs/plugin-react all live here.
+// Confirmed in practice: without this, only the 3 `dependencies` installed
+// (~7 packages incl. their own transitive deps) and `tsc -b` failed
+// immediately on missing @types/node and vite/client types. Both
+// --include=dev and overriding NODE_ENV are set — either alone should be
+// enough, but belt-and-braces since this exact failure already shipped
+// once from an assumption that looked right locally but wasn't.
+run("npm ci --include=dev", funnelAppRoot, { NODE_ENV: "development" });
 
 run("npm run build", funnelAppRoot);
 
