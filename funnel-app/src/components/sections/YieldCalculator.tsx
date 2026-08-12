@@ -83,6 +83,25 @@ export function YieldCalculator() {
     { label: "Yearly", days: 365 },
   ];
 
+  /** Mining's daily formula is static (a fixed pool share × days, no restaking
+   *  mechanic in the source material). Staking auto-compounds daily per the
+   *  protocol's published Reward Plan — each day's CA yield is added back to
+   *  the staked balance before the next day's pool share is calculated. */
+  const periodCA = useMemo(() => {
+    return (days: number) => {
+      if (mode === "mining") return dailyCA * days;
+      if (totalStaked <= 0) return 0;
+      let balance = staked;
+      let earned = 0;
+      for (let d = 0; d < days; d++) {
+        const dailyEarn = (balance / totalStaked) * 7_200;
+        balance += dailyEarn;
+        earned += dailyEarn;
+      }
+      return earned;
+    };
+  }, [mode, dailyCA, staked, totalStaked]);
+
   return (
     <SectionShell id="calculator" tone="deep">
       <Container>
@@ -192,7 +211,7 @@ export function YieldCalculator() {
             {/* Output */}
             <div className="mt-4 grid grid-cols-3 gap-3">
               {periods.map((p) => {
-                const ca = dailyCA * p.days;
+                const ca = periodCA(p.days);
                 return (
                   <div
                     key={p.label}
@@ -214,12 +233,13 @@ export function YieldCalculator() {
 
             <div className="mt-6 space-y-3 text-xs leading-relaxed text-[var(--color-muted)]">
               <p>
-                Daily output uses the protocol's published formula as-is. Monthly and yearly are the
-                daily figure × 30 and × 365 — they hold today's network size and today's CA price
-                fixed for the whole period. In reality both move: as more participants join, the
-                fixed daily pool splits further and the same holding produces less.
-                {mode === "staking" &&
-                  " Fixed terms carry a compounding multiplier per the protocol's published rules; the exact rates aren't shown here, so all terms above use the base rate."}
+                Daily output uses the protocol's published formula as-is, holding today's network
+                size and today's CA price fixed for the whole period. In reality both move: as more
+                participants join, the fixed daily pool splits further and the same holding
+                produces less.
+                {mode === "staking"
+                  ? " Monthly and yearly auto-compound daily — each day's CA yield is added back to your staked balance before the next day's pool share is calculated, matching the protocol's published \"Daily Automatic Compounding\" feature. Fixed terms (30/90/180/360 days) also carry a yield-rate multiplier on top of this; the exact per-term rates aren't shown here, so all terms above use the flexible base rate."
+                  : " Monthly and yearly are the daily figure × 30 and × 365 — mining's daily formula is static and doesn't compound."}
               </p>
               <p>
                 CA valued at ${pricing.ca.usd} ({pricing.asOf}) from{" "}
