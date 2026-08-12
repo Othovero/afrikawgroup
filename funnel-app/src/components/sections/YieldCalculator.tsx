@@ -9,6 +9,17 @@ type Duration = "Flexible" | "30" | "90" | "180" | "360";
 
 const durations: Duration[] = ["Flexible", "30", "90", "180", "360"];
 
+/** Per-term daily yield rate multiplier, exactly as published in the source
+ *  deck (Flexible 0.20%/day up to 360-day 0.50%/day — i.e. "Flexi x1.0" up
+ *  to "Flexi x2.5"). Applied on top of the pool-share formula's daily CA. */
+const STAKING_TERM_MULTIPLIER: Record<Duration, number> = {
+  Flexible: 1,
+  "30": 1.3,
+  "90": 1.6,
+  "180": 2.0,
+  "360": 2.5,
+};
+
 function fmt(n: number, max = 2) {
   return n.toLocaleString("en-US", { maximumFractionDigits: max });
 }
@@ -72,8 +83,10 @@ export function YieldCalculator() {
     if (mode === "mining") {
       return totalHashrate > 0 ? (hashrate / totalHashrate) * 16_800 : 0;
     }
-    return totalStaked > 0 ? (staked / totalStaked) * 7_200 : 0;
-  }, [mode, hashrate, totalHashrate, staked, totalStaked]);
+    return totalStaked > 0
+      ? (staked / totalStaked) * 7_200 * STAKING_TERM_MULTIPLIER[duration]
+      : 0;
+  }, [mode, hashrate, totalHashrate, staked, totalStaked, duration]);
 
   const share = mode === "mining" ? hashrate / (totalHashrate || 1) : staked / (totalStaked || 1);
 
@@ -91,16 +104,17 @@ export function YieldCalculator() {
     return (days: number) => {
       if (mode === "mining") return dailyCA * days;
       if (totalStaked <= 0) return 0;
+      const multiplier = STAKING_TERM_MULTIPLIER[duration];
       let balance = staked;
       let earned = 0;
       for (let d = 0; d < days; d++) {
-        const dailyEarn = (balance / totalStaked) * 7_200;
+        const dailyEarn = (balance / totalStaked) * 7_200 * multiplier;
         balance += dailyEarn;
         earned += dailyEarn;
       }
       return earned;
     };
-  }, [mode, dailyCA, staked, totalStaked]);
+  }, [mode, dailyCA, staked, totalStaked, duration]);
 
   return (
     <SectionShell id="calculator" tone="deep">
@@ -127,6 +141,14 @@ export function YieldCalculator() {
                 </button>
               ))}
             </div>
+
+            {mode === "staking" && (
+              <div className="mb-5 flex justify-center">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10 px-3 py-1 text-[11px] text-[var(--color-accent)]">
+                  Auto-compounds daily — each day's CA yield is added back to your stake
+                </span>
+              </div>
+            )}
 
             {mode === "mining" ? (
               <div className="space-y-5">
@@ -238,7 +260,7 @@ export function YieldCalculator() {
                 participants join, the fixed daily pool splits further and the same holding
                 produces less.
                 {mode === "staking"
-                  ? " Monthly and yearly auto-compound daily — each day's CA yield is added back to your staked balance before the next day's pool share is calculated, matching the protocol's published \"Daily Automatic Compounding\" feature. Fixed terms (30/90/180/360 days) also carry a yield-rate multiplier on top of this; the exact per-term rates aren't shown here, so all terms above use the flexible base rate."
+                  ? ` All figures auto-compound daily — each day's CA yield is added back to your staked balance before the next day's pool share is calculated, matching the protocol's published "Daily Automatic Compounding" feature. Locking in a fixed term also lifts your daily rate above the flexible base: 30 days ×1.3, 90 days ×1.6, 180 days ×2.0, 360 days ×2.5 — currently applying the ${duration === "Flexible" ? "flexible ×1.0" : `${duration}-day ×${STAKING_TERM_MULTIPLIER[duration]}`} rate.`
                   : " Monthly and yearly are the daily figure × 30 and × 365 — mining's daily formula is static and doesn't compound."}
               </p>
               <p>

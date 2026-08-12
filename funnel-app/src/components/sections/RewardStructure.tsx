@@ -28,7 +28,7 @@ const streams = [
   {
     kind: "Passive",
     title: "Static staking",
-    desc: "Your stake's share of the PoS pool, which draws from a 7,200 CA daily output, a 1.8% sell-slippage reflow, and undistributed dynamic rewards.",
+    desc: "Your stake's share of the PoS pool, which draws from a 7,200 CA daily output, a 1.8% sell-slippage reflow, and undistributed dynamic rewards. Earnings auto-compound daily back into your stake, and locking in a fixed 30/90/180/360-day term lifts your daily rate up to 2.5x over the flexible rate.",
   },
   {
     kind: "Active",
