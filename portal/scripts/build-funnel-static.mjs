@@ -35,9 +35,13 @@ if (!existsSync(funnelAppRoot)) {
   process.exit(0);
 }
 
-if (!existsSync(path.join(funnelAppRoot, "node_modules"))) {
-  run("npm install", funnelAppRoot);
-}
+// Always a full, deterministic install from the lockfile — no conditional
+// "skip if node_modules exists" check. That check previously let a partial
+// or stale node_modules slip through (seen in practice: npm resolved only
+// 7 of ~64 needed packages, silently dropping @types/node and vite/client,
+// which then failed `tsc -b`). `npm ci` removes node_modules first and
+// installs exactly what package-lock.json specifies, every time.
+run("npm ci", funnelAppRoot);
 
 run("npm run build", funnelAppRoot);
 
