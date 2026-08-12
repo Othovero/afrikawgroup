@@ -1,9 +1,6 @@
 import { Container } from "../ui/Container";
 import type { SponsorTokens } from "../../types";
 
-/** Where the member portal is served. Override per environment. */
-const PORTAL_ORIGIN = import.meta.env.VITE_PORTAL_ORIGIN ?? "http://localhost:3000";
-
 function LockIcon() {
   return (
     <svg
@@ -47,7 +44,7 @@ export function Footer({ tokens }: { tokens: SponsorTokens }) {
           <span>© {year} Afrika Wealth Group.</span>
           <span className="break-all">{tokens.funnel_url}</span>
           <a
-            href={PORTAL_ORIGIN}
+            href="/login"
             className="flex items-center gap-1.5 rounded-full border border-[var(--color-panel-border)] px-3.5 py-1.5 transition-colors hover:border-[var(--color-accent-deep)] hover:text-[var(--color-parchment)]"
           >
             <LockIcon />

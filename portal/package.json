@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/build-funnel-static.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:funnel-static": "node scripts/build-funnel-static.mjs"
   },
   "dependencies": {
     "next": "16.3.0",
